@@ -29,7 +29,7 @@ void ASpike::DamageActor(AActor* OtherActor, float DamageAmount)
 void ASpike::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 		if (Active) return;
-	
+		
 		Active = true;
 		// GetWorldTimerManager().SetTimer(this, &ASpike::DamageActor, 1.f, true);
 }
@@ -39,7 +39,6 @@ void ASpike::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherAc
 void ASpike::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
