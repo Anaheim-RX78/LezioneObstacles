@@ -27,7 +27,7 @@ public:
 	
 	UPROPERTY(EditAnywhere, Category = "Spike")
 	float DPS;
-
+	
 	virtual void DamageActor(AActor* OtherActor, float DamageAmount);
 
 protected:
