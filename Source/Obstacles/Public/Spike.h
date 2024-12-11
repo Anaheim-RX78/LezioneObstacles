@@ -23,19 +23,14 @@ public:
 	UStaticMeshComponent* MeshComponent;
 	
 	UPROPERTY(EditAnywhere, Category = "Spike")
-	float ImpactDamage;
+	float impactDamage = 3;
 	
 	UPROPERTY(EditAnywhere, Category = "Spike")
-	float DPS;
-	
-	virtual void DamageActor(AActor* OtherActor, float DamageAmount);
+	float DPS = 1;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	UPROPERTY(BlueprintReadWrite, Category = "Spike")
-	AActor* OverlappedActor;
 	
 	UFUNCTION()
 	void OnOverlap(
@@ -45,6 +40,14 @@ protected:
 		int32 OtherBodyIndex,
 		bool bFromSweep,
 		const FHitResult& SweepResult
+	);
+
+	UFUNCTION()
+	void OnOverlapEnd(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex
 	);
 
 	UPROPERTY(EditAnywhere, Category = "Spike")
