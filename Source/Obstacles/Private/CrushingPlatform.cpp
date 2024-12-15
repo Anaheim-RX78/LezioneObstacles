@@ -21,8 +21,11 @@ void ACrushingPlatform::BeginPlay()
 
 void ACrushingPlatform::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	FVector StartLocation = GetActorLocation(); 
-	FVector EndLocation = StartLocation + (NormalImpulse.GetSafeNormal() * 100.f);
+	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("HIT SMTH"));
+	
+	FVector StartLocation = GetActorLocation();
+	
+	FVector EndLocation = StartLocation + (MovementVector.GetSafeNormal() * 500.f);
 	
 	TArray<UPrimitiveComponent*> IgnoredComponents;
 	OtherActor->GetComponents(IgnoredComponents);
@@ -36,16 +39,17 @@ void ACrushingPlatform::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherAc
 	
 	TArray<FHitResult> HitResults;
 	FCollisionQueryParams QueryParams;
-	QueryParams.AddIgnoredActor(OtherActor); // Ignore the character itself during the trace
+	// QueryParams.AddIgnoredActor(OtherActor); // Ignore the character itself during the trace
+	QueryParams.AddIgnoredActor(this);
+	
 
-	bool bHitSomething = GetWorld()->SweepMultiByChannel(
-		HitResults,
-		StartLocation,
-		EndLocation,
-		FQuat::Identity, 
-		ECC_Visibility,
-		FCollisionShape::MakeSphere(10.f),
-		QueryParams
+	bool bHitSomething = GetWorld()->SweepMult(
+	HitResults,
+	StartLocation,
+	EndLocation,
+	FQuat::Identity,
+	FCollisionShape::MakeSphere(10.f),
+	QueryParams
 	);
 
 	if (!bHitSomething)
@@ -53,6 +57,11 @@ void ACrushingPlatform::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherAc
 		return;
 	}
 
+	for (FHitResult& hit : HitResults)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, *hit.GetActor()->GetName());
+
+	}
 	HitResults.Sort([](const FHitResult& A, const FHitResult& B)
 	{
 		return A.Distance < B.Distance;
@@ -73,10 +82,12 @@ void ACrushingPlatform::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherAc
 	// FVector EntryPoint = HitResults[0].ImpactPoint;
 	FVector ExitPoint = CapsuleHits[CapsuleHits.Num() - 1].ImpactPoint;
 	
-	HitResults.FilterByPredicate([&](const FHitResult& hit)
+	TArray<FHitResult> ExternalHits = HitResults.FilterByPredicate([&](const FHitResult& hit)
 	{
-		return IgnoredComponents.Contains(hit.Component);
+		return !IgnoredComponents.Contains(hit.Component);
 	});
+
+
 	
 	
 
