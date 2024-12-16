@@ -20,6 +20,12 @@ ABasePlatform::ABasePlatform()
 	}
 }
 
+FString ABasePlatform::GetIdentifier()
+{
+	return identifier;
+}
+
+
 // Called when the game starts or when spawned
 void ABasePlatform::BeginPlay()
 {

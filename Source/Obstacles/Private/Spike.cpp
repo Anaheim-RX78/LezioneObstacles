@@ -3,6 +3,8 @@
 
 #include "Spike.h"
 
+#include "MyPawnController.h"
+
 
 // Sets default values
 ASpike::ASpike()
@@ -10,27 +12,41 @@ ASpike::ASpike()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>("Capsule");
-	RootComponent = CapsuleComponent;
 
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");
-	MeshComponent->SetupAttachment(RootComponent);
+	RootComponent = MeshComponent;
+	
+	CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>("Capsule");
+	MeshComponent->SetupAttachment(CapsuleComponent);
+}
+
+FString ASpike::GetIdentifier()
+{
+	return identifier;
 }
 
 
 void ASpike::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	// damage actor once
-	// set continuous damage for actor
+	if (OtherActor->StaticClass() != AMyPawnController::StaticClass()) return;
+	
+	AMyPawnController* MyPawnController = Cast<AMyPawnController>(OtherActor);
+	if (!MyPawnController) return;
+
+	MyPawnController->LifeHandler->DamageAndTurnOnContinuousDamage(5.f, 1.f, 1.f, GetIdentifier());
 }
 
 void ASpike::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	// remove continuous damage for actor
+	if (OtherActor->StaticClass() != AMyPawnController::StaticClass()) return;
+	
+	AMyPawnController* MyPawnController = Cast<AMyPawnController>(OtherActor);
+	if (!MyPawnController) return;
+
+	MyPawnController->LifeHandler->TurnOffContinuousDamage(GetIdentifier());
 }
 
 
-// Called when the game starts or when spawned
 void ASpike::BeginPlay()
 {
 	Super::BeginPlay();

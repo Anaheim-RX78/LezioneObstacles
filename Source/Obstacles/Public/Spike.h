@@ -56,5 +56,8 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
+	virtual FString GetIdentifier();
+private:
+	UPROPERTY()
+	FString identifier = "Spike";
 };

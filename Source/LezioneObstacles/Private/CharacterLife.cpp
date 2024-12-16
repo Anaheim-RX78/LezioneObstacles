@@ -8,7 +8,6 @@ ACharacterLife::ACharacterLife()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
 }
 
 // Called when the game starts or when spawned
@@ -24,27 +23,42 @@ void ACharacterLife::Tick(float DeltaTime)
 	if (continuousDamageOn && damagePerInterval)
 	{
 		timer += DeltaTime;
-		Damage(damagePerInterval);
+		if (timer >= continuousDamageInterval) Damage(damagePerInterval);
 	}
 }
 
-void ACharacterLife::Damage(float damage)
-{	
-	lifeValue -= damage;
+void ACharacterLife::Damage(float impactDamage)
+{
+	lifeValue -= impactDamage;
+	OnLifeUpdate.Broadcast();
 }
 
-void ACharacterLife::TurnOnContinuousDamage(float damage, float damageInterval)
+void ACharacterLife::DamageAndTurnOnContinuousDamage(float impactDamage, float continuousDamage, float damageInterval, FString damageEntity)
 {
+	if (damagingEntities.Contains(damageEntity)) return;
+	Damage(impactDamage);
+	TurnOnContinuousDamage(continuousDamage, damageInterval, damageEntity);
+}
+
+void ACharacterLife::TurnOnContinuousDamage(float damage, float damageInterval, FString damageEntity)
+{
+	if (damagingEntities.Contains(damageEntity)) return;
+	
+	damagingEntities.AddUnique(damageEntity);
+
 	damagePerInterval = damage;
-	secondsInterval = damageInterval;
+	continuousDamageInterval = damageInterval;
 	continuousDamageOn = true;
 }
 
-void ACharacterLife::TurnOffContinuousDamage()
+void ACharacterLife::TurnOffContinuousDamage(FString damageEntity)
 {
+	damagingEntities.Remove(damageEntity);
+	if (damagingEntities.Num() > 0) return;
+	
 	damagePerInterval = 0;
 	continuousDamageOn = false;
-	secondsInterval = 0;
+	continuousDamageInterval = 0;
 	timer = 0;
 }
 
