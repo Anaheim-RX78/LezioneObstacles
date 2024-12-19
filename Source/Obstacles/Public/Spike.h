@@ -28,6 +28,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Spike")
 	float DPS = 1;
 
+	UPROPERTY(EditAnywhere, Category = "Spike")
+	FVector TeleportLocation;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

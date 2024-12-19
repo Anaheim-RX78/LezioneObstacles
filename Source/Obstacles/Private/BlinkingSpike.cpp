@@ -15,11 +15,14 @@ ABlinkingSpike::ABlinkingSpike()
 void ABlinkingSpike::BeginPlay()
 {
 	Super::BeginPlay();
+	SetActorHiddenInGame(true);
 }
 
 void ABlinkingSpike::SwitchVisibility()
 {
 	SetActorHiddenInGame(visible);
+	
+	SetActorEnableCollision(!visible);
 	visible = !visible;
 }
 
@@ -28,6 +31,13 @@ void ABlinkingSpike::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	
+	if (initialDelayTimer <= initialDelay)
+	{
+		initialDelayTimer += DeltaTime;
+		return;
+	}
+	
 	timer += DeltaTime;
 
 	float timerThreshold = visible ? secondsOn : secondsOff;

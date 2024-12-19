@@ -12,12 +12,20 @@ ASpike::ASpike()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>("Capsule");
+	RootComponent = CapsuleComponent;
 
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");
-	RootComponent = MeshComponent;
-	
-	CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>("Capsule");
 	MeshComponent->SetupAttachment(CapsuleComponent);
+	
+
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> ConeMeshAsset(TEXT("/Engine/BasicShapes/Cone.Cone"));
+	if (ConeMeshAsset.Succeeded())
+	{
+		MeshComponent->SetStaticMesh(ConeMeshAsset.Object);
+		MeshComponent->SetRelativeScale3D(FVector(0.5f, 0.5f, 0.8f));
+		MeshComponent->SetCollisionProfileName("OverlapAllDynamic");
+	}
 }
 
 FString ASpike::GetIdentifier()
@@ -28,22 +36,20 @@ FString ASpike::GetIdentifier()
 
 void ASpike::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor->StaticClass() != AMyPawnController::StaticClass()) return;
-	
-	AMyPawnController* MyPawnController = Cast<AMyPawnController>(OtherActor);
-	if (!MyPawnController) return;
-
-	MyPawnController->LifeHandler->DamageAndTurnOnContinuousDamage(5.f, 1.f, 1.f, GetIdentifier());
+	if (ACharacter* Character = Cast<ACharacter>(OtherActor))
+	{
+		Character->SetActorLocation(TeleportLocation);
+	}
 }
 
 void ASpike::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (OtherActor->StaticClass() != AMyPawnController::StaticClass()) return;
-	
-	AMyPawnController* MyPawnController = Cast<AMyPawnController>(OtherActor);
-	if (!MyPawnController) return;
-
-	MyPawnController->LifeHandler->TurnOffContinuousDamage(GetIdentifier());
+	// if (OtherActor->StaticClass() != AMyPawnController::StaticClass()) return;
+	//
+	// AMyPawnController* MyPawnController = Cast<AMyPawnController>(OtherActor);
+	// if (!MyPawnController) return;
+	//
+	// MyPawnController->LifeHandler->TurnOffContinuousDamage(GetIdentifier());
 }
 
 
@@ -51,7 +57,6 @@ void ASpike::BeginPlay()
 {
 	Super::BeginPlay();
 	CapsuleComponent->OnComponentBeginOverlap.AddDynamic(this, &ASpike::OnOverlap);
-	CapsuleComponent->OnComponentEndOverlap.AddDynamic(this, &ASpike::OnOverlapEnd);
 }
 
 

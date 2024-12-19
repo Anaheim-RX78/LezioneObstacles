@@ -10,15 +10,15 @@ AMyPawnController::AMyPawnController()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	LifeHandlerActor = CreateDefaultSubobject<UChildActorComponent>(TEXT("ChildLifeHandler"));
+	LifeHandlerActor->SetChildActorClass(ACharacterLife::StaticClass());
+	LifeHandler = Cast<ACharacterLife>(LifeHandlerActor->GetChildActor());
 }
 
 // Called when the game starts or when spawned
 void AMyPawnController::BeginPlay()
 {
 	Super::BeginPlay();
-	LifeHandlerActor = CreateDefaultSubobject<UChildActorComponent>(TEXT("ChildLifeHandler"));
-	LifeHandlerActor->SetChildActorClass(ACharacterLife::StaticClass());
-	LifeHandler = Cast<ACharacterLife>(LifeHandlerActor->GetChildActor());
 }
 
 // Called every frame
