@@ -3,6 +3,7 @@
 
 #include "CrushingPlatform.h"
 
+#include "MyPawnController.h"
 #include "Components/CapsuleComponent.h"
 
 // Sets default values
@@ -21,77 +22,12 @@ void ACrushingPlatform::BeginPlay()
 
 void ACrushingPlatform::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("HIT SMTH"));
+	if (OtherActor->StaticClass() != AMyPawnController::StaticClass()) return;
 	
-	FVector StartLocation = GetActorLocation();
-	
-	FVector EndLocation = StartLocation + (MovementVector.GetSafeNormal() * 500.f);
-	
-	TArray<UPrimitiveComponent*> IgnoredComponents;
-	OtherActor->GetComponents(IgnoredComponents);
-	
-	UActorComponent* CapsuleCollider = OtherActor->GetComponentByClass(UCapsuleComponent::StaticClass());
+	AMyPawnController* MyPawnController = Cast<AMyPawnController>(OtherActor);
+	if (!MyPawnController) return;
 
-	if (!IsValid(CapsuleCollider))
-	{
-		return;
-	}
-	
-	TArray<FHitResult> HitResults;
-	FCollisionQueryParams QueryParams;
-	// QueryParams.AddIgnoredActor(OtherActor); // Ignore the character itself during the trace
-	QueryParams.AddIgnoredActor(this);
-	
-
-	bool bHitSomething = GetWorld()->SweepMult(
-	HitResults,
-	StartLocation,
-	EndLocation,
-	FQuat::Identity,
-	FCollisionShape::MakeSphere(10.f),
-	QueryParams
-	);
-
-	if (!bHitSomething)
-	{
-		return;
-	}
-
-	for (FHitResult& hit : HitResults)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, *hit.GetActor()->GetName());
-
-	}
-	HitResults.Sort([](const FHitResult& A, const FHitResult& B)
-	{
-		return A.Distance < B.Distance;
-	});
-
-	// Sort the hit results based on distance along the trace path
-	TArray<FHitResult> CapsuleHits = HitResults.FilterByPredicate([&](const FHitResult& hit)
-	{
-		return hit.Component == CapsuleCollider;
-	});
-
-	if (CapsuleHits.Num() == 0)
-	{
-		return;
-	}
-
-	// Calculate the distance between the character's collider and the wall
-	// FVector EntryPoint = HitResults[0].ImpactPoint;
-	FVector ExitPoint = CapsuleHits[CapsuleHits.Num() - 1].ImpactPoint;
-	
-	TArray<FHitResult> ExternalHits = HitResults.FilterByPredicate([&](const FHitResult& hit)
-	{
-		return !IgnoredComponents.Contains(hit.Component);
-	});
-
-
-	
-	
-
-	// Check if the distance is smaller than the threshold (10 units)
+	MyPawnController->LifeHandler->Damage(1000);
 }
 
 
